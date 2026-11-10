@@ -1,0 +1,33 @@
+# Walkthrough: every file in plain English
+
+## Top level
+
+- **README.md**: what the project is, the table of scripts, real output, limits.
+- **WALKTHROUGH.md**: this file.
+- **LICENSE**: MIT. Anyone may reuse the code; no warranty.
+- **.gitignore**: tells git to skip Python cache folders and Excel temp files (`~$...`).
+- **requirements.txt**: the three packages needed: pandas (tables), openpyxl (read/write `.xlsx`, cell styling), pytest (tests).
+
+## scripts/
+
+All scripts follow one pattern: `argparse` reads the command line (and gives `--help` for free), a small function does the real work, `main()` wires them together and returns an exit code (0 = fine, 2 = bad input, 1 = validation failed).
+
+- **make_samples.py**: builds the two synthetic input workbooks with a fixed random seed (so they are identical every run). Plants three problems on purpose: an outlier (`units` 900), a duplicated row, and a blank `product`.
+- **merge_workbooks.py**: reads the first sheet of each input with `pd.read_excel`, adds a `source_file` column, joins them with `pd.concat`, writes one file.
+- **dedupe_rows.py**: `drop_duplicates(subset=keys, keep="first")`. With no `--keys` it compares whole rows. Rejects key names that are not columns.
+- **validate_columns.py**: for each required column, reports "missing" if absent, or lists the Excel row numbers of blank cells (`isna()`; index + 2 converts to Excel rows). Exit code 1 means problems, so it can gate other steps in a shell script.
+- **pivot_summary.py**: `pd.pivot_table` with the chosen row column, optional column-spread, value column and aggregate; `margins=True` adds the "All" totals. Prints the table and saves it.
+- **highlight_anomalies.py**: pandas finds outliers with the IQR rule (below Q1 − 1.5×IQR or above Q3 + 1.5×IQR; `--k` changes 1.5). Then openpyxl reopens the original workbook and sets a yellow `PatternFill("solid")` on those cells, so the original formatting is kept.
+
+## sample_input/ (synthetic)
+
+- **sales_north.xlsx, sales_south.xlsx**: made-up orders (id, date, region, product, units, price). Produced by `make_samples.py`.
+
+## sample_output/ (produced by really running the scripts)
+
+- **merged.xlsx, deduped.xlsx, pivot.xlsx, highlighted.xlsx**: results of the commands in the README, in order.
+- **real_run.txt**: the exact terminal output of that run.
+
+## tests/
+
+- **test_scripts.py**: pytest. Builds a small workbook in a temp folder, then checks: every script's `--help` works; merge row count and `source_file`; dedupe with and without `--keys` and with a bad key; validate on valid, blank and missing cases; pivot totals; only the true outlier cell is filled. Run with `python -m pytest -q`.
