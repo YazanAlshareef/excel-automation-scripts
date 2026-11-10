@@ -13,7 +13,8 @@ def validate(df, required):
     problems = [f"missing column: {c}" for c in required if c not in df.columns]
     for c in required:
         if c in df.columns:
-            blanks = df.index[df[c].isna()] + 2  # +2: header row + 1-based Excel rows
+            empty = df[c].map(lambda v: pd.isna(v) or (isinstance(v, str) and not v.strip()))  # whitespace-only counts as blank
+            blanks = df.index[empty] + 2  # +2: header row + 1-based Excel rows
             if len(blanks):
                 problems.append(f"blank in '{c}' at Excel row(s): {', '.join(map(str, blanks))}")
     return problems
