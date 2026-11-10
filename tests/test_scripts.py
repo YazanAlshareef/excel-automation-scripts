@@ -70,3 +70,37 @@ def test_highlight_marks_only_outlier(book, tmp_path):
     filled = [c.row for row in ws.iter_rows() for c in row if c.fill.fgColor.rgb == "00FFFF00"]
     assert filled == [9]  # the 500, Excel row 9
     assert highlight_anomalies.main([str(book), "-o", str(out), "--column", "nope"]) == 2
+
+
+def test_highlight_uses_first_sheet_even_if_other_is_active(book, tmp_path):
+    wb = load_workbook(book)
+    wb.create_sheet("Other")
+    wb.active = 1  # make the second sheet the active one
+    src = tmp_path / "two_sheets.xlsx"
+    wb.save(src)
+    out = tmp_path / "h2.xlsx"
+    assert highlight_anomalies.main([str(src), "-o", str(out), "--column", "n"]) == 0
+    wb2 = load_workbook(out)
+    filled = [c.row for row in wb2.worksheets[0].iter_rows() for c in row if c.fill.fgColor.rgb == "00FFFF00"]
+    assert filled == [9]
+
+
+def test_output_equal_to_input_is_refused(book, capsys):
+    p = str(book)
+    assert merge_workbooks.main([p, "-o", p]) == 2
+    assert dedupe_rows.main([p, "-o", p]) == 2
+    assert highlight_anomalies.main([p, "-o", p, "--column", "n"]) == 2
+    assert "same as an input" in capsys.readouterr().err
+    assert len(pd.read_excel(book)) == 8  # input untouched
+
+
+def test_validate_treats_whitespace_as_blank(tmp_path):
+    p = tmp_path / "ws.xlsx"
+    pd.DataFrame({"a": ["x", "   ", "y"]}).to_excel(p, index=False)
+    assert validate_columns.main([str(p), "--required", "a"]) == 1
+
+
+def test_pivot_mean_on_text_column_exits_cleanly(book, tmp_path, capsys):
+    out = tmp_path / "p2.xlsx"
+    assert pivot_summary.main([str(book), "-o", str(out), "--index", "n", "--values", "cat", "--agg", "mean"]) == 2
+    assert "is it numeric" in capsys.readouterr().err
