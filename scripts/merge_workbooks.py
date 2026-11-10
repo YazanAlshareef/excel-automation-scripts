@@ -1,6 +1,9 @@
 """Merge several Excel workbooks (first sheet of each) into one.
 
 A `source_file` column records which file each row came from.
+
+WARNING: text cells starting with "=" are written back as Excel formulas.
+Only merge workbooks you trust; a malicious file could plant formulas.
 """
 import argparse
 import sys
@@ -23,6 +26,9 @@ def main(argv=None):
     ap.add_argument("inputs", nargs="+", help="input .xlsx files")
     ap.add_argument("-o", "--output", required=True, help="output .xlsx file")
     args = ap.parse_args(argv)
+    if Path(args.output).resolve() in {Path(p).resolve() for p in args.inputs}:
+        print("error: output path is the same as an input file; pick a different -o", file=sys.stderr)
+        return 2
     out = merge(args.inputs)
     out.to_excel(args.output, index=False)
     print(f"merged {len(args.inputs)} files -> {len(out)} rows, wrote {args.output}")

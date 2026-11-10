@@ -1,6 +1,7 @@
 """Remove duplicate rows from a workbook, keeping the first occurrence."""
 import argparse
 import sys
+from pathlib import Path
 
 import pandas as pd
 
@@ -15,6 +16,9 @@ def main(argv=None):
     ap.add_argument("-o", "--output", required=True, help="output .xlsx file")
     ap.add_argument("--keys", nargs="+", help="columns that define a duplicate (default: all columns)")
     args = ap.parse_args(argv)
+    if Path(args.output).resolve() in {Path(p).resolve() for p in [args.input]}:
+        print("error: output path is the same as an input file; pick a different -o", file=sys.stderr)
+        return 2
     df = pd.read_excel(args.input)
     if args.keys:
         missing = [k for k in args.keys if k not in df.columns]
