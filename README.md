@@ -16,7 +16,7 @@ Five small Python scripts that automate common Excel chores with `pandas` and `o
 
 ### Real output
 
-Copied from [sample_output/real_run.txt](sample_output/real_run.txt), which I produced by running the commands above in order:
+Condensed from [sample_output/real_run.txt](sample_output/real_run.txt) (the full, unedited terminal output of running the commands above in order; I removed the command lines and blank lines and added the note on the validate line):
 
 ```
 merged 2 files -> 25 rows, wrote sample_output/merged.xlsx
@@ -45,7 +45,7 @@ The sample data has planted problems so each script has something to find: one d
 pip install -r requirements.txt
 python scripts/make_samples.py      # optional: regenerate sample_input/
 python scripts/dedupe_rows.py --help
-python -m pytest -q                 # 10 tests, all passed on my machine
+python -m pytest -q                 # 14 tests, all passed on my machine
 ```
 
 Tested with Python 3.12, pandas 3.0.5, openpyxl 3.1.5.
@@ -60,11 +60,14 @@ Honest account: no test failed on the final run, but these were pitfalls I hit o
 
 - **Anomaly rule.** I chose IQR over a z-score on purpose: an outlier inflates the mean and standard deviation, which hides it on small tables (and on tiny tables a z-score of 3 cannot be reached at all). IQR uses quartiles, which one extreme value barely moves.
 - **Row numbers.** pandas row 0 is Excel row 2 (header + 1-based). Reports add 2; tests check the exact row (`19`, `5`).
+- **Whitespace.** A cell containing only spaces looks empty in Excel, so `validate_columns.py` counts it as blank.
 - **Blank cells in pivots.** The row with a blank `product` is silently left out of the pivot (pandas drops missing group keys). That is why `validate_columns.py` exists: run it first.
 
 ## Limits
 
-- Only the first sheet of each workbook is read.
+- Only the first sheet of each workbook is read (the highlighter also edits that first sheet).
+- `merge_workbooks.py` writes cells that start with `=` as Excel formulas, so only merge files you trust.
+- Scripts refuse an output path equal to an input path (exit 2) so you cannot overwrite your source.
 - Everything is loaded into memory; fine for thousands of rows, not millions.
 - `highlight_anomalies.py` keeps cell styles of the input, but charts, images and some features may be lost when openpyxl re-saves.
 - IQR is a simple rule: it flags unusual values, not necessarily wrong ones.
