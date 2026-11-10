@@ -1,6 +1,7 @@
 """Highlight outliers in a numeric column (IQR rule) with a yellow fill."""
 import argparse
 import sys
+from pathlib import Path
 
 import pandas as pd
 from openpyxl import load_workbook
@@ -23,13 +24,16 @@ def main(argv=None):
     ap.add_argument("--column", required=True, help="numeric column to check")
     ap.add_argument("--k", type=float, default=1.5, help="IQR multiplier (default 1.5)")
     args = ap.parse_args(argv)
+    if Path(args.output).resolve() in {Path(p).resolve() for p in [args.input]}:
+        print("error: output path is the same as an input file; pick a different -o", file=sys.stderr)
+        return 2
     df = pd.read_excel(args.input)
     if args.column not in df.columns:
         print(f"error: unknown column: {args.column}", file=sys.stderr)
         return 2
     bad = find_outliers(pd.to_numeric(df[args.column], errors="coerce"), args.k)
     wb = load_workbook(args.input)
-    ws = wb.active
+    ws = wb.worksheets[0]  # same sheet pd.read_excel reads
     col = list(df.columns).index(args.column) + 1
     for i in bad:
         ws.cell(row=i + 2, column=col).fill = YELLOW  # +2: header row + 1-based rows
