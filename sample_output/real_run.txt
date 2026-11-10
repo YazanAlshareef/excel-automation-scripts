@@ -1,0 +1,24 @@
+$ python scripts/merge_workbooks.py sample_input/sales_north.xlsx sample_input/sales_south.xlsx -o sample_output/merged.xlsx
+merged 2 files -> 25 rows, wrote sample_output/merged.xlsx
+
+$ python scripts/validate_columns.py sample_output/merged.xlsx --required order_id region product units price
+INVALID
+ - blank in 'product' at Excel row(s): 19
+exit code: 1
+
+$ python scripts/dedupe_rows.py sample_output/merged.xlsx -o sample_output/deduped.xlsx
+25 rows in, 1 duplicates removed, 24 rows out -> sample_output/deduped.xlsx
+
+$ python scripts/pivot_summary.py sample_output/deduped.xlsx -o sample_output/pivot.xlsx --index product --columns region --values units --agg sum
+region    North  South   All
+product                     
+Folder       12     20    32
+Notebook    911     31   942
+Pen          64     29    93
+Stapler      30     37    67
+All        1017    117  1134
+wrote sample_output/pivot.xlsx
+
+$ python scripts/highlight_anomalies.py sample_output/deduped.xlsx -o sample_output/highlighted.xlsx --column units
+1 anomalies in 'units' at Excel row(s): 5
+wrote sample_output/highlighted.xlsx
