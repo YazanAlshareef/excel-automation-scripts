@@ -24,7 +24,11 @@ def main(argv=None):
     if missing:
         print(f"error: unknown column(s): {', '.join(missing)}", file=sys.stderr)
         return 2
-    table = pivot(df, args.index, args.values, args.columns, args.agg).round(2)
+    try:
+        table = pivot(df, args.index, args.values, args.columns, args.agg).round(2)
+    except (TypeError, ValueError, pd.errors.DataError) as e:
+        print(f"error: cannot apply '{args.agg}' to column '{args.values}' (is it numeric?): {e}", file=sys.stderr)
+        return 2
     table.to_excel(args.output)
     print(table.to_string())
     print(f"wrote {args.output}")
