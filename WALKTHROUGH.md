@@ -5,10 +5,13 @@
 - **README.md**: what the project is, the table of scripts, real output, limits.
 - **WALKTHROUGH.md**: this file.
 - **LICENSE**: MIT. Anyone may reuse the code; no warranty.
+- **.github/workflows/ci.yml**: GitHub Actions. On each push it installs the requirements and runs `python -m pytest -q` on Ubuntu and Windows.
 - **.gitignore**: tells git to skip Python cache folders and Excel temp files (`~$...`).
 - **requirements.txt**: the three packages needed: pandas (tables), openpyxl (read/write `.xlsx`, cell styling), pytest (tests).
 
 ## scripts/
+
+- **_common.py**: one small helper, `existing_file`, used as an argparse `type=` so a wrong input path gives "file not found" and exit 2 instead of a traceback.
 
 All scripts follow one pattern: `argparse` reads the command line (and gives `--help` for free), a small function does the real work, `main()` wires them together and returns an exit code (0 = fine, 2 = bad input, 1 = validation failed).
 
@@ -30,4 +33,4 @@ All scripts follow one pattern: `argparse` reads the command line (and gives `--
 
 ## tests/
 
-- **test_scripts.py**: pytest. Builds a small workbook in a temp folder, then checks: every script's `--help` works; merge row count and `source_file`; dedupe with and without `--keys` and with a bad key; validate on valid, blank and missing cases; pivot totals; only the true outlier cell is filled (even when another sheet is active); output=input is refused; whitespace counts as blank; mean on a text column exits 2. Run with `python -m pytest -q`.
+- **test_scripts.py**: pytest. Builds a small workbook in a temp folder, then checks: every script's `--help` works; merge row count and `source_file`; dedupe with and without `--keys` and with a bad key; validate on valid, blank and missing cases; pivot totals; only the true outlier cell is filled (even when another sheet is active); output=input is refused; whitespace counts as blank; mean on a text column exits 2; a missing input file exits 2; highlighting a text column exits 2. Run with `python -m pytest -q`.
