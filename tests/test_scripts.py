@@ -122,3 +122,10 @@ def test_missing_input_file_exits_2_with_message(argv, tmp_path, capsys):
 def test_highlight_refuses_text_column(book, tmp_path, capsys):
     assert highlight_anomalies.main([str(book), "-o", str(tmp_path / "t.xlsx"), "--column", "cat"]) == 2
     assert "no numeric values" in capsys.readouterr().err
+
+
+def test_pivot_refuses_output_equal_to_input(book, capsys):
+    p = str(book)
+    assert pivot_summary.main([p, "-o", p, "--index", "cat", "--values", "n"]) == 2
+    assert "same as an input" in capsys.readouterr().err
+    assert len(pd.read_excel(book)) == 8
