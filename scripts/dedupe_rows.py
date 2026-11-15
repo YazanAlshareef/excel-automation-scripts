@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 
 import pandas as pd
+from _common import existing_file
 
 
 def dedupe(df, keys=None):
@@ -12,7 +13,7 @@ def dedupe(df, keys=None):
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.strip().splitlines()[0])
-    ap.add_argument("input", help="input .xlsx file")
+    ap.add_argument("input", type=existing_file, help="input .xlsx file")
     ap.add_argument("-o", "--output", required=True, help="output .xlsx file")
     ap.add_argument("--keys", nargs="+", help="columns that define a duplicate (default: all columns)")
     args = ap.parse_args(argv)

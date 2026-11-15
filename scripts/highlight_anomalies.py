@@ -6,6 +6,7 @@ from pathlib import Path
 import pandas as pd
 from openpyxl import load_workbook
 from openpyxl.styles import PatternFill
+from _common import existing_file
 
 YELLOW = PatternFill("solid", fgColor="FFFF00")
 
@@ -19,7 +20,7 @@ def find_outliers(series, k=1.5):
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.strip().splitlines()[0])
-    ap.add_argument("input", help="input .xlsx file")
+    ap.add_argument("input", type=existing_file, help="input .xlsx file")
     ap.add_argument("-o", "--output", required=True, help="output .xlsx file")
     ap.add_argument("--column", required=True, help="numeric column to check")
     ap.add_argument("--k", type=float, default=1.5, help="IQR multiplier (default 1.5)")
@@ -31,7 +32,11 @@ def main(argv=None):
     if args.column not in df.columns:
         print(f"error: unknown column: {args.column}", file=sys.stderr)
         return 2
-    bad = find_outliers(pd.to_numeric(df[args.column], errors="coerce"), args.k)
+    nums = pd.to_numeric(df[args.column], errors="coerce")
+    if nums.notna().sum() == 0:
+        print(f"error: column '{args.column}' has no numeric values", file=sys.stderr)
+        return 2
+    bad = find_outliers(nums, args.k)
     wb = load_workbook(args.input)
     ws = wb.worksheets[0]  # same sheet pd.read_excel reads
     col = list(df.columns).index(args.column) + 1

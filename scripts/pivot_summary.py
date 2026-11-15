@@ -3,6 +3,7 @@ import argparse
 import sys
 
 import pandas as pd
+from _common import existing_file
 
 
 def pivot(df, index, values, columns=None, agg="sum"):
@@ -11,7 +12,7 @@ def pivot(df, index, values, columns=None, agg="sum"):
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.strip().splitlines()[0])
-    ap.add_argument("input", help="input .xlsx file")
+    ap.add_argument("input", type=existing_file, help="input .xlsx file")
     ap.add_argument("-o", "--output", required=True, help="output .xlsx file")
     ap.add_argument("--index", required=True, help="column for the rows")
     ap.add_argument("--values", required=True, help="numeric column to aggregate")

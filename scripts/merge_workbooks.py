@@ -10,6 +10,7 @@ import sys
 from pathlib import Path
 
 import pandas as pd
+from _common import existing_file
 
 
 def merge(paths):
@@ -23,7 +24,7 @@ def merge(paths):
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.strip().splitlines()[0])
-    ap.add_argument("inputs", nargs="+", help="input .xlsx files")
+    ap.add_argument("inputs", nargs="+", type=existing_file, help="input .xlsx files")
     ap.add_argument("-o", "--output", required=True, help="output .xlsx file")
     args = ap.parse_args(argv)
     if Path(args.output).resolve() in {Path(p).resolve() for p in args.inputs}:

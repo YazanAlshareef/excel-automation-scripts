@@ -104,3 +104,21 @@ def test_pivot_mean_on_text_column_exits_cleanly(book, tmp_path, capsys):
     out = tmp_path / "p2.xlsx"
     assert pivot_summary.main([str(book), "-o", str(out), "--index", "n", "--values", "cat", "--agg", "mean"]) == 2
     assert "is it numeric" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("argv", [
+    lambda m, p: merge_workbooks.main([str(p / "nope.xlsx"), "-o", str(p / "o.xlsx")]),
+    lambda m, p: dedupe_rows.main([str(p / "nope.xlsx"), "-o", str(p / "o.xlsx")]),
+    lambda m, p: validate_columns.main([str(p / "nope.xlsx"), "--required", "a"]),
+    lambda m, p: pivot_summary.main([str(p / "nope.xlsx"), "-o", str(p / "o.xlsx"), "--index", "a", "--values", "b"]),
+    lambda m, p: highlight_anomalies.main([str(p / "nope.xlsx"), "-o", str(p / "o.xlsx"), "--column", "a"]),
+])
+def test_missing_input_file_exits_2_with_message(argv, tmp_path, capsys):
+    with pytest.raises(SystemExit) as e:
+        argv(None, tmp_path)
+    assert e.value.code == 2 and "file not found" in capsys.readouterr().err
+
+
+def test_highlight_refuses_text_column(book, tmp_path, capsys):
+    assert highlight_anomalies.main([str(book), "-o", str(tmp_path / "t.xlsx"), "--column", "cat"]) == 2
+    assert "no numeric values" in capsys.readouterr().err

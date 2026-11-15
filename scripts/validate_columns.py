@@ -6,6 +6,7 @@ import argparse
 import sys
 
 import pandas as pd
+from _common import existing_file
 
 
 def validate(df, required):
@@ -22,7 +23,7 @@ def validate(df, required):
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.strip().splitlines()[0])
-    ap.add_argument("input", help="input .xlsx file")
+    ap.add_argument("input", type=existing_file, help="input .xlsx file")
     ap.add_argument("--required", nargs="+", required=True, help="column names that must exist and be filled")
     args = ap.parse_args(argv)
     problems = validate(pd.read_excel(args.input), args.required)
