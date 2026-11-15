@@ -1,6 +1,7 @@
 """Merge several Excel workbooks (first sheet of each) into one.
 
 A `source_file` column records which file each row came from.
+An input that already has a `source_file` column is refused (exit 2).
 
 WARNING: text cells starting with "=" are written back as Excel formulas.
 Only merge workbooks you trust; a malicious file could plant formulas.
@@ -17,6 +18,8 @@ def merge(paths):
     frames = []
     for p in paths:
         df = pd.read_excel(p)
+        if "source_file" in df.columns:
+            raise ValueError(f"{Path(p).name} already has a 'source_file' column; rename it first")
         df["source_file"] = Path(p).name
         frames.append(df)
     return pd.concat(frames, ignore_index=True)
@@ -30,7 +33,11 @@ def main(argv=None):
     if Path(args.output).resolve() in {Path(p).resolve() for p in args.inputs}:
         print("error: output path is the same as an input file; pick a different -o", file=sys.stderr)
         return 2
-    out = merge(args.inputs)
+    try:
+        out = merge(args.inputs)
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 2
     out.to_excel(args.output, index=False)
     print(f"merged {len(args.inputs)} files -> {len(out)} rows, wrote {args.output}")
     return 0

@@ -122,3 +122,11 @@ def test_missing_input_file_exits_2_with_message(argv, tmp_path, capsys):
 def test_highlight_refuses_text_column(book, tmp_path, capsys):
     assert highlight_anomalies.main([str(book), "-o", str(tmp_path / "t.xlsx"), "--column", "cat"]) == 2
     assert "no numeric values" in capsys.readouterr().err
+
+
+def test_merge_refuses_existing_source_file_column(tmp_path, capsys):
+    a = tmp_path / "a.xlsx"
+    pd.DataFrame({"x": [1], "source_file": ["old"]}).to_excel(a, index=False)
+    out = tmp_path / "o.xlsx"
+    assert merge_workbooks.main([str(a), "-o", str(out)]) == 2
+    assert "source_file" in capsys.readouterr().err and not out.exists()
