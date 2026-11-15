@@ -71,6 +71,12 @@ flowchart LR
 
 Each script stands alone. The diagram shows the order I used on the sample data, nothing forces it.
 
+## Diagrams
+
+- [Components](docs/diagrams/components.md): scripts, helper, libraries and files
+- [Sequences](docs/diagrams/sequences.md): merge and validate flows
+- [Highlight anomalies logic](docs/diagrams/highlight-anomalies.md): decision steps of the highlighter
+
 ## How an AI coding assistant helped
 
 An AI coding assistant wrote the first draft of the scripts and tests. I checked the pandas and openpyxl calls against their current docs and ran everything myself. [WALKTHROUGH.md](WALKTHROUGH.md) explains each file.
