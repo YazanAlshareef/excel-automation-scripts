@@ -77,10 +77,6 @@ Each script stands alone. The diagram shows the order I used on the sample data,
 - [Sequences](docs/diagrams/sequences.md): merge and validate flows
 - [Highlight anomalies logic](docs/diagrams/highlight-anomalies.md): decision steps of the highlighter
 
-## How an AI coding assistant helped
-
-An AI coding assistant wrote the first draft of the scripts and tests. I checked the pandas and openpyxl calls against their current docs and ran everything myself. [WALKTHROUGH.md](WALKTHROUGH.md) explains each file.
-
 ## What went wrong along the way
 
 No test failed on the final run, but I ran into a few things and designed around them.
@@ -101,6 +97,8 @@ No test failed on the final run, but I ran into a few things and designed around
 - Dedupe compares exact values, so `Pen` and `pen ` are different.
 - Not tested on `.xls`, password-protected files or very large files. I never opened the outputs in desktop Excel; I checked the yellow fill by reading it back with openpyxl in a test.
 - Tests passed locally (20 tests, Python 3.12, pandas 3.0.5, openpyxl 3.1.5). The GitHub Actions workflow runs the same `pytest` on Ubuntu and Windows, but I have not seen its result yet.
+
+See [WALKTHROUGH.md](WALKTHROUGH.md) for what each file does.
 
 ## License
 
