@@ -133,3 +133,11 @@ def test_non_excel_input_exits_2(name, tmp_path):
     out = ["-o", str(tmp_path / "o.xlsx")] if name != "validate_columns" else []
     r = subprocess.run([sys.executable, str(ROOT / "scripts" / f"{name}.py"), str(bad), *out, *extra], capture_output=True, text=True)
     assert r.returncode == 2 and "Traceback" not in r.stderr and "cannot read" in r.stderr
+
+
+def test_merge_refuses_existing_source_file_column(tmp_path, capsys):
+    a = tmp_path / "a.xlsx"
+    pd.DataFrame({"x": [1], "source_file": ["old"]}).to_excel(a, index=False)
+    out = tmp_path / "o.xlsx"
+    assert merge_workbooks.main([str(a), "-o", str(out)]) == 2
+    assert "source_file" in capsys.readouterr().err and not out.exists()
