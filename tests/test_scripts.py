@@ -122,3 +122,14 @@ def test_missing_input_file_exits_2_with_message(argv, tmp_path, capsys):
 def test_highlight_refuses_text_column(book, tmp_path, capsys):
     assert highlight_anomalies.main([str(book), "-o", str(tmp_path / "t.xlsx"), "--column", "cat"]) == 2
     assert "no numeric values" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("name", ["merge_workbooks", "dedupe_rows", "validate_columns", "pivot_summary", "highlight_anomalies"])
+def test_non_excel_input_exits_2(name, tmp_path):
+    bad = tmp_path / "bad.xlsx"
+    bad.write_text("not a workbook")
+    extra = {"merge_workbooks": [], "dedupe_rows": [], "validate_columns": ["--required", "a"],
+             "pivot_summary": ["--index", "a", "--values", "b"], "highlight_anomalies": ["--column", "a"]}[name]
+    out = ["-o", str(tmp_path / "o.xlsx")] if name != "validate_columns" else []
+    r = subprocess.run([sys.executable, str(ROOT / "scripts" / f"{name}.py"), str(bad), *out, *extra], capture_output=True, text=True)
+    assert r.returncode == 2 and "Traceback" not in r.stderr and "cannot read" in r.stderr
