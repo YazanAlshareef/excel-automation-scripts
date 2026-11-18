@@ -141,3 +141,10 @@ def test_merge_refuses_existing_source_file_column(tmp_path, capsys):
     out = tmp_path / "o.xlsx"
     assert merge_workbooks.main([str(a), "-o", str(out)]) == 2
     assert "source_file" in capsys.readouterr().err and not out.exists()
+
+
+def test_pivot_refuses_output_equal_to_input(book, capsys):
+    p = str(book)
+    assert pivot_summary.main([p, "-o", p, "--index", "cat", "--values", "n"]) == 2
+    assert "same as an input" in capsys.readouterr().err
+    assert len(pd.read_excel(book)) == 8

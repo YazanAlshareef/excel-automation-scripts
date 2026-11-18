@@ -1,6 +1,7 @@
 """Build a pivot summary (group + aggregate) and save it as a workbook."""
 import argparse
 import sys
+from pathlib import Path
 
 import pandas as pd
 from _common import existing_file
@@ -19,6 +20,9 @@ def main(argv=None):
     ap.add_argument("--columns", help="optional column to spread across the top")
     ap.add_argument("--agg", default="sum", choices=["sum", "mean", "count", "min", "max"])
     args = ap.parse_args(argv)
+    if Path(args.output).resolve() == Path(args.input).resolve():
+        print("error: output path is the same as an input file; pick a different -o", file=sys.stderr)
+        return 2
     df = pd.read_excel(args.input)
     need = [c for c in (args.index, args.values, args.columns) if c]
     missing = [c for c in need if c not in df.columns]
